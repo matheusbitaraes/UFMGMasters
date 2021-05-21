@@ -1,0 +1,1 @@
+# app that will listen to voices or audio recordings and evaluate live the emotion

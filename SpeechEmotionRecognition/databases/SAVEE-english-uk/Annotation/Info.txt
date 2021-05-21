@@ -1,0 +1,17 @@
+--------------------------------------
+Speakers
+--------------------------------------
+'DC', 'JE', 'JK' and 'KL' are the four male speakers recorded in the SAVEE database.
+
+--------------------------------------
+Annotation
+--------------------------------------
+The are two sub-directories for each speaker: FrequencyTrack and PhoneticLabel.
+
+FrequencyTrack provides the fundamental frequency of voice from the audio (f0, in Hz).
+PhoneticLabel provides phone-level annotation (in seconds).
+
+There are 15 sentences for each of the 7 emotion categories, and one file for each sentence.
+The initial letter(s) of the file name represents the emotion class, and the following digits represent the sentence number. The letters 'a', 'd', 'f', 'h', 'n', 'sa' and 'su' represent respectively 'anger', 'disgust', 'fear', 'happiness', 'neutral', 'sadness' and 'surprise'. 
+E.g., 'd3.txt' gives the annotation for the 3rd disgust sentence. 
+

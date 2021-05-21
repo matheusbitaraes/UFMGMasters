@@ -1,0 +1,55 @@
+Long Vowels
+AA - fArm (F AA M)
+AO - All (AO L)
+IY - shE (SH IY)
+ER - lERrn (L ER R N)
+UW - sUIt (S UW T)
+
+Short Vowels
+AE - hAts (HH AE T S)
+AH - cUt (K AH t)
+AX - thE (DH AX), Account (AX K AW N T)
+EH - tEll (T EH L)
+IH - In (IH N)
+OH - wAsh (W OH SH)
+UH - lOOk (L UH K)
+
+Diphthongs
+AY - lIke (L AY K)					/AE + IH/
+AW - aLLOW (AX L AW)					/AE + UH/
+EA - wEAr (W EA R), Pair (P EA R)			/EH + AX/
+EY - dAY (D EY)						/EH + IH/
+IA - calcIUm (K AE L S IA M), rEAlize (R IA L AY Z)	/IH + AX/
+OW - dOn't (D OW N T), bOnes (B OW N Z)			/AX + UH/
+OY - bOY (B OY)						/AO + IH/
+UA - visUAl (V IH ZH UA L), poor (P UA R)		/UH + AX/
+
+Consonants
+B - Book
+CH - CHild
+D - Day
+DH - THe
+F - For
+G - Go
+HH - Holiday
+JH - Jump
+K - Cat
+L - Look
+M - Moon
+N - Name
+NG - siNG
+P - Pen
+R - Run
+S - Say
+SH - SHe
+T - Town
+TH - THink
+V - Very
+W - Wash
+Y - Your, Year
+Z - Zoo
+ZH - viSion, viSual
+
+Pauses & silences
+SIL - *silence*
+SP - *short pause*

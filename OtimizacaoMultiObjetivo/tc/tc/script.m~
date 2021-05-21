@@ -1,0 +1,4 @@
+% leitura dos arquivos
+equipamentos = csvread('EquipDB.csv');
+planos_manutencao = csvread('MPDB.csv');
+cl
