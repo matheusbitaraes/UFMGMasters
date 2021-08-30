@@ -7,7 +7,7 @@ library(caret)
 library(kernlab)
 library(GGClassification)
 library(tsutils)
-
+library(randomForest)
 
 # MAIN
 multiple_evaluations <- function(X, Y, num_clusters, num_eval, svm_kernel='rbfdot' ){
@@ -15,9 +15,12 @@ multiple_evaluations <- function(X, Y, num_clusters, num_eval, svm_kernel='rbfdo
   nm_acc <- c()
   svm_acc <- c()
   gg_acc <- c()
+  nm2_acc <- c()
   nm_time <- c()
   svm_time <- c()
   gg_time <- c()
+  nm2_time <- c()
+  
   # FUNÇÕES DE SUPORTE
   get_cluster <- function(x, km){
     centers <- km$centers
@@ -105,10 +108,10 @@ multiple_evaluations <- function(X, Y, num_clusters, num_eval, svm_kernel='rbfdo
       x_ <-x_train[clusters == i,]
       y_ <-y_train[clusters == i]
       acc_svm <- eval_model(x_, y_, svm_option, n_exec=1, type="SVM")
-      # print(sprintf("SVM (acc): %s", acc_svm))
+      print(sprintf("SVM (acc): %s", acc_svm))
       acc_gg <- eval_model(x_, y_, gg_option, n_exec=1, type="GG")
-      # print(sprintf("GG (acc): %s", acc_gg))
-      # print("--")
+      print(sprintf("GG (acc): %s", acc_gg))
+      print("--")
       if (acc_gg > acc_svm){
         cluster_model <- c(cluster_model, "GG")
       }else{
@@ -126,7 +129,7 @@ multiple_evaluations <- function(X, Y, num_clusters, num_eval, svm_kernel='rbfdo
     predSVM <- kernlab::predict(svmtrein, x_test, type='response')
     svm_end_time <- Sys.time()
     # cm_svm <- confusionMatrix(as.factor(predSVM), as.factor(y_test))
-
+    
     #GG
     gg_start_time <- Sys.time()
     mdl <- GGClassification::model(x_train, y_train)
@@ -134,24 +137,34 @@ multiple_evaluations <- function(X, Y, num_clusters, num_eval, svm_kernel='rbfdo
     gg_end_time <- Sys.time()
     # cm_gg <- confusionMatrix(as.factor(y_pred_gg), as.factor(y_test))
     
+    # rf
+    nm2_start_time <- Sys.time()
+    rf <- randomForest(x_train, y_train)
+    y_pred_nm2 <- round(kernlab::predict(rf, x_test))
+    nm2_end_time <- Sys.time()
+    
     nm_acc <- c(nm_acc, sum(y_pred == y_test)/length(y_test))
     svm_acc <- c(svm_acc, sum(predSVM == y_test)/length(y_test))
     gg_acc <- c(gg_acc, sum(y_pred_gg == y_test)/length(y_test))
+    nm2_acc <- c(nm2_acc, sum(y_pred_nm2 == y_test)/length(y_test))
     nm_time <- c(nm_time, nm_end_time - nm_start_time)
     svm_time <- c(svm_time, svm_end_time - svm_start_time)
     gg_time <- c(gg_time, gg_end_time - gg_start_time)
+    nm2_time <- c(nm2_time, nm2_end_time - nm2_start_time)
     
-    # print("EVALUATION")
-    # print(sprintf("cluster model: %s (%s) ",sum(y_pred == y_test)/length(y_test),
-    #               nm_end_time - nm_start_time))
-    # print(sprintf("SVM: %s ", sum(predSVM == y_test)/length(y_test),
-    #               svm_end_time - svm_start_time))
-    # print(sprintf("ggClassification: %s ",sum(y_pred_gg == y_test)/length(y_test),
-    #               gg_end_time - gg_start_time))
-    # print("----------------------------------------------------")
+    print("EVALUATION")
+    print(sprintf("cluster model: %s (%s) ",sum(y_pred == y_test)/length(y_test),
+                  nm_end_time - nm_start_time))
+    print(sprintf("SVM: %s ", sum(predSVM == y_test)/length(y_test),
+                  svm_end_time - svm_start_time))
+    print(sprintf("ggClassification: %s ",sum(y_pred_gg == y_test)/length(y_test),
+                  gg_end_time - gg_start_time))
+    print(sprintf("committee model: %s ",sum(y_pred_nm2 == y_test)/length(y_test),
+                  nm2_end_time - nm2_start_time))
+    print("----------------------------------------------------")
   }
-  return(list(data.frame("nm" = nm_acc, "svm" = svm_acc, "gg" = gg_acc),
-           data.frame("nm" = nm_time, "svm" = svm_time, "gg" = gg_time)))
+  return(list(data.frame("nm" = nm_acc, "svm" = svm_acc, "gg" = gg_acc, "nm2" = nm2_acc),
+              data.frame("nm" = nm_time, "svm" = svm_time, "gg" = gg_time, "nm2" = nm2_time)))
 }
 
 evaluate_dataset <- function(X, Y, name, nclusters, num_exec){
@@ -186,14 +199,7 @@ evaluate_dataset <- function(X, Y, name, nclusters, num_exec){
   # Aplicação do kruskal e teste de nemenyi
   time_matrix <- as.matrix(times)
   tsutils::nemenyi(time_matrix, conf.level=0.95,plottype="vmcb", sort=TRUE, main="Teste de Nemenyi (Tempo)") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
-
-  print(sprintf("accsvm:%s",mean(accs$svm)))
-  print(sprintf("accgg:%s",mean(accs$gg)))
-  print(sprintf("accnm:%s",mean(accs$nm)))
-  print(sprintf("timesvm:%s",mean(times$svm)))
-  print(sprintf("timegg:%s",mean(times$gg)))
-  print(sprintf("timenm:%s",mean(times$nm)))
-  }
+}
 
 ######################################### TWO GAUSSIAN DATASET ######################################### 
 nclusters <- 5
@@ -242,7 +248,7 @@ mat <- data.matrix(iris)
 X <- scale(mat[, 1:4], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
 Y <- mat[, 5]
 
-# evaluate_dataset(X, Y, name, 5, 100)
+evaluate_dataset(X, Y, name, 5, 100)
 
 ######################################### WINE DATASET ######################################### 
 name <- "Wine Dataset"

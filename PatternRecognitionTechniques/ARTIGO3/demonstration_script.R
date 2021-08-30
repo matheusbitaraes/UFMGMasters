@@ -6,7 +6,7 @@ library(spatgraphs)
 
 # definição do spirals
 N<-1000 #numeros pares
-p <- mlbench.spirals(N,1,0.05)
+p <- mlbench.spirals(N,1,0.15)
 x <- p[[1]]
 x1 <- x[,1]
 x2 <- x[,2]
@@ -27,13 +27,6 @@ predSVM <- kernlab::predict(svmtrein, testing, type='response')
 table(testing$y, predSVM)
 kernlab::plot(svmtrein, data=spirals)
 
-# LSSVM
-lssvmtrein <- kernlab::ksvm(y ~ ., data = training, type='C-svc', kernel='rbfdot')
-lssvmtrein
-predLSSVM <- kernlab::predict(lssvmtrein, testing, type='response')
-table(testing$y, predLSSVM)
-kernlab::plot(lssvmtrein, data=spirals)
-
 # GABRIEL GRAPH
 a = x[y==1,]
 b = x[y==2,]
@@ -52,9 +45,9 @@ title(main="Grafo de Gabriel")
 
 
 #dataset 2
-nc = 100
-xc1 <- matrix(0.3 * rnorm(nc) + 2.5, ncol = 2)
-xc2 <- matrix(0.3 * rnorm(nc) + 3.5, ncol = 2)
+nc = 500
+xc1 <- matrix(0.45 * rnorm(nc) + 2.5, ncol = 2)
+xc2 <- matrix(0.45 * rnorm(nc) + 3.5, ncol = 2)
 xc1 <- cbind(xc1, rep(0, times = nc/2))
 xc2 <- cbind(xc2, rep(1, times = nc/2))
 X <- rbind(xc1, xc2)
