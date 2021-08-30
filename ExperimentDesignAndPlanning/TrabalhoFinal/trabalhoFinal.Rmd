@@ -1,0 +1,234 @@
+---
+title: "Trabalho Final"
+author: "Diego Pontes, Elias Vieira, Matheus Bitarães"
+date: "Abril, 2021"
+output:
+    pdf_document:
+    fig_caption: yes
+---
+
+
+```{r, include=TRUE}
+# Leitura de arquivos 
+file_names = list.files(pattern="*.csv")
+par(mfrow=c(3,3))
+data <-  data.frame(matrix(ncol = 2, nrow = 0))
+colnames(data) <- c("file_name","x")
+for (file_name in file_names) {
+  file <- read.csv(file=file_name, header = FALSE, sep=",")
+  colnames(file) <- c("file_name","x")
+  hist(file$x, breaks = 50, main=file_name)
+  file$file_name <- rep(file_name,nrow(file))
+  data <- rbind(data, file)
+}
+#write.csv(data, file = "all_data.csv")
+```
+```{r, include=TRUE}
+# Boxplots
+par(mar=c(4,10,1,1))
+boxplot(x~file_name, data=data,
+main = "Boxplots das Iterações",
+#names = file_names,
+las = 2,
+#col = c("orange","orange", "red", "red"),
+horizontal = TRUE,
+ann=FALSE
+)
+```
+
+```{r, include=TRUE}
+#organizando em colunas para fazer o teste
+data_sw <-  data.frame(matrix(ncol = 9, nrow = 100))
+colnames(data_sw) <- c("m30c30","m50c30","m80c30","m30c50","m50c50","m80c50","m30c80","m50c80","m80c80")
+for (c in 1:9) {
+  for (r in 1:100) {
+    data_sw[r,c] <- data[(c-1)*100+r,2]
+  }
+}
+#data_sw
+apply(data_sw, 2, shapiro.test)
+```
+
+teste de friedman: teste não paramétrico para encontrar diferenças em varias amostras.
+
+o teste separa os blocos em colunas (igual foi feito abaixo), depois ordena cada coluna separadamente e armazena a soma. (https://www.statisticshowto.com/friedmans-test/)
+
+FM critial: É um valor calculado de acordo com o némero de amostras e o nivel de confianca desejado
+
+
+teste de kruskal wallis: 
+O teste de Kruskal-Wallis é o análogo ao teste F utilizado na ANOVA 1 fator. Enquanto a análise de variância dos testes dependem da hipótese de que todas as populações em confronto são independentes e normalmente distribuídas, o teste de Kruskal-Wallis não coloca nenhuma restrição sobre a comparação. Suponha que os dados provenham de k amostras aleatórias independentes com tamanhos amostrais n1, n2, ..., nk sendo N = n1 + n2 + ... + nk o número total de elementos considerados em todas as amostras. (http://www.portalaction.com.br/tecnicas-nao-parametricas/teste-de-kruskal-wallis)
+```{r, include=TRUE}
+#write.csv(data_sw, file = "all_data.csv")
+y <- c(data_sw$m30c30, data_sw$m50c30,data_sw$m80c30, data_sw$m30c50,data_sw$m50c50, data_sw$m80c50,data_sw$m30c80, data_sw$m50c80,data_sw$m80c80)
+group <- as.factor(c(rep(1, length(data_sw$m30c30)), rep(2, length(data_sw$m50c30)), rep(3, length(data_sw$m80c30)), rep(4, length(data_sw$m30c50)), rep(5, length(data_sw$m50c50)), rep(6, length(data_sw$m80c50)), rep(7, length(data_sw$m30c80)), rep(8, length(data_sw$m50c80)), rep(9, length(data_sw$m80c80))))
+datatable = cbind (y, group)
+
+#aplicação do Friedman
+friedman.test(datatable)
+#aplicação do kruskal
+kruskal.test(y~group, data=data_sw)
+```
+ainda nao consegui entender o que é esse chi-squared e o df.
+
+
+
+referencia de nemenyi(https://www.real-statistics.com/one-way-analysis-of-variance-anova/kruskal-wallis-test/nemenyi-test-after-kw/)
+```{r, include=TRUE}
+if (!require(tsutils, quietly = TRUE)){
+      suppressMessages(install.packages("tsutils"))
+      }
+library(tsutils)
+teste <- as.matrix(data_sw)#, rownames=NULL, rownames.value=NULL, ...)
+teste1 = nemenyi(teste,conf.level=0.95,plottype="matrix") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+teste1 = nemenyi(teste,conf.level=0.95,plottype="vmcb") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+print(teste1$means)
+summary(teste1)
+```
+pra na notar que o m80c80, m80c30 e m80c50 são os melhores. Mas entre si eles nao tem muita distinção
+
+
+```{r, include=TRUE}
+if (!require(PMCMR, quietly = TRUE)){
+      suppressMessages(install.packages("PMCMR"))
+      }
+library(PMCMR)
+test2_a <- posthoc.kruskal.nemenyi.test(y ~ group, data=data)
+test2_a
+summary(test2_a)
+
+#Correction tier are present
+test2_b <- posthoc.kruskal.nemenyi.test(y~group, dist="Chisquare")
+test2_b
+summary(test2_b)
+```
+
+
+```{r, include=TRUE}
+if (!require(dunn.test, quietly = TRUE)){
+      suppressMessages(install.packages("dunn.test"))
+      }
+library(dunn.test)
+test3 <- dunn.test (y,group)
+summary(test3)
+```
+
+
+
+podemos testar os efeitos separamente. Primeiro pegar todas as amostras com pm fixo de 80% e comparar o efeito de se aumentar o cruzamento:
+```{r}
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+library(forcats)
+
+teste <- as.matrix(select(data_sw, m30c30, m50c30, m80c30))#, rownames=NULL, rownames.value=NULL, ...)
+teste1 = nemenyi(teste,conf.level=0.95,plottype="matrix") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+teste1 = nemenyi(teste,conf.level=0.95,plottype="vmcb") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+print(teste1$means)
+summary(teste1)
+
+teste <- as.matrix(select(data_sw, m30c50, m50c50, m80c50))#, rownames=NULL, rownames.value=NULL, ...)
+teste1 = nemenyi(teste,conf.level=0.95,plottype="matrix") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+teste1 = nemenyi(teste,conf.level=0.95,plottype="vmcb") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+print(teste1$means)
+summary(teste1)
+
+
+teste <- as.matrix(select(data_sw, m30c80, m50c80, m80c80))#, rownames=NULL, rownames.value=NULL, ...)
+teste1 = nemenyi(teste,conf.level=0.95,plottype="matrix") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+teste1 = nemenyi(teste,conf.level=0.95,plottype="vmcb") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+print(teste1$means)
+summary(teste1)
+
+
+
+teste <- as.matrix(select(data_sw, m30c30, m30c50, m30c80))#, rownames=NULL, rownames.value=NULL, ...)
+teste1 = nemenyi(teste,conf.level=0.95,plottype="matrix") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+teste1 = nemenyi(teste,conf.level=0.95,plottype="vmcb") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+print(teste1$means)
+summary(teste1)
+
+
+teste <- as.matrix(select(data_sw, m50c30, m50c50, m50c80))#, rownames=NULL, rownames.value=NULL, ...)
+teste1 = nemenyi(teste,conf.level=0.95,plottype="matrix") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+teste1 = nemenyi(teste,conf.level=0.95,plottype="vmcb") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+print(teste1$means)
+summary(teste1)
+
+
+teste <- as.matrix(select(data_sw, m80c30, m80c50, m80c80))#, rownames=NULL, rownames.value=NULL, ...)
+teste1 = nemenyi(teste,conf.level=0.95,plottype="matrix") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+teste1 = nemenyi(teste,conf.level=0.95,plottype="vmcb") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+print(teste1$means)
+summary(teste1)
+
+
+```
+```{r}
+teste <- as.matrix(select(data_sw, m50c50, m50c80))#, rownames=NULL, rownames.value=NULL, ...)
+teste1 = nemenyi(teste,conf.level=0.95,plottype="matrix") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+teste1 = nemenyi(teste,conf.level=0.95,plottype="vmcb") # possiveis plots: "vline", "none", "mcb", "vmcb", "line", "matrix"
+print(teste1$means)
+summary(teste1)
+
+```
+
+```{r, include=TRUE}
+# Libraries
+# PLOT COLORIDO
+
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+library(forcats)
+
+# plot
+p <- data %>%
+  ggplot( aes(x=x, color=file_name, fill=file_name)) +
+    geom_histogram(alpha=0.6, binwidth = 5) +
+    scale_fill_viridis(discrete=TRUE) +
+    scale_color_viridis(discrete=TRUE) +
+    theme_ipsum() +
+    theme(
+      legend.position="none",
+      panel.spacing = unit(0.2, "lines"),
+      strip.text.x = element_text(size = 8)
+    ) +
+    xlab("") +
+    ylab("distribuição de probabilidade (%)") +
+    facet_wrap(~file_name)
+
+last_plot()
+```
+
+```{r, include=TRUE}
+# Libraries
+# PLOT COLORIDO CONSIDERANDO VALORES ATÉ 1000 ITERAÇOES
+
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+library(forcats)
+
+# plot
+p <- data %>%
+  ggplot( aes(x=x, color=file_name, fill=file_name)) +
+    geom_histogram(alpha=0.6, binwidth = 5) +
+    scale_fill_viridis(discrete=TRUE) +
+    scale_color_viridis(discrete=TRUE) +
+    theme_ipsum() +
+    theme(
+      legend.position="none",
+      panel.spacing = unit(0.2, "lines"),
+      strip.text.x = element_text(size = 8)
+    ) +
+  
+    xlim(c(0,1000))+
+    xlab("") +
+    ylab("distribuição de probabilidade (%)") +
+    facet_wrap(~file_name)
+
+last_plot()
+```
+
