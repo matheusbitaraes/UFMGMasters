@@ -1,0 +1,552 @@
+---
+title: "Estudo de Caso 03: Comparação de desempenho de duas configurações de um algoritmo de otimização"
+author: "Diego Pontes, Elias Vieira, Matheus Bitarães"
+date: "Março, 2021"
+output:
+    pdf_document:
+    fig_caption: yes
+---
+```{r setup, results='hide', warning=FALSE, include = FALSE, message = FALSE, echo=FALSE}
+if (!require(ggplot2, quietly = TRUE)){
+      install.packages("ggplot2")
+      }
+if (!require(devtools, quietly = TRUE)){
+      install.packages("devtools")
+}
+if (!require(GGally, quietly = TRUE)){
+      install.packages("GGally")
+      }
+ if (!require(broom, quietly = TRUE)){
+       devtools::install_github("dgrtwo/broom")
+      }
+if (!require(stats, quietly = TRUE)){
+      suppressMessages(install.packages("stats"))
+      }
+if (!require(plotly, quietly = TRUE)){
+      suppressMessages(install.packages("plotly"))
+      }
+if (!require(reshape2, quietly = TRUE)){
+      suppressMessages(install.packages("reshape2"))
+      }
+if (!require(tidyr, quietly = TRUE)){
+      suppressMessages(install.packages("tidyr"))
+}
+if (!require(pracma, quietly = TRUE)){
+      suppressMessages(install.packages("pracma"))
+      }
+if (!require(lsr, quietly = TRUE)){
+      suppressMessages(install.packages("lsr"))
+      }
+if (!require(car, quietly = TRUE)){
+      suppressMessages(install.packages("car"))
+      }
+if (!require(pwr, quietly = TRUE)){
+      suppressMessages(install.packages("pwr"))
+      }
+if (!require(multcompView, quietly = TRUE)){
+      suppressMessages(install.packages("multcompView"))
+      }
+if (!require(multcomp, quietly = TRUE)){
+      suppressMessages(install.packages("multcomp"))
+      }
+if (!require(lmtest, quietly = TRUE)){
+      suppressMessages(install.packages("lmtest"))
+      }
+if (!require(effectsize, quietly = TRUE)){
+      suppressMessages(install.packages("effectsize"))
+      }
+if (!require(CAISEr, quietly = TRUE)){
+      suppressMessages(install.packages("CAISEr"))
+      }
+```
+
+```{r, message = FALSE, warning = FALSE, results = 'hide', echo = FALSE}
+library(stats)
+library(ggplot2)
+library(plotly)
+library(reshape2)
+library(GGally)
+library(tidyr)
+library(pracma)
+library(lsr)
+library(car)
+library(pwr)
+library(multcompView)
+library(multcomp)
+library(lmtest)
+library(effectsize)
+library(CAISEr)
+options(Encoding="UTF-8")
+```
+
+
+## Descrição do problema
+
+Suponha que um pesquisador está interessado em investigar o efeito de duas configurações distintas de um algoritmo em seu desempenho para uma dada classe de problemas de otimização.
+Como forma de análise, foi proposta a tarefa de efetuar a  comparação experimental de duas configurações em uma classe de problemas, representada por um conjunto de instâncias de teste fornecidas. O objetivo deste estudo é responder às seguintes perguntas:
+
+• Há alguma diferença no desempenho médio do algoritmo quando equipado com estas diferentes configurações, para a classe de problemas de interesse? 
+
+• Caso haja, qual a melhor configuração em termos de desempenho médio (atenção: quanto menor o valor retornado, melhor o algoritmo), e qual a magnitude das diferenças encontradas?
+
+• Há alguma configuração que deva ser recomendada em relação à outra?
+
+
+## Introdução
+
+Algoritmos baseados em populações são uma alternativa comum para a solução de problemas de otimização em engenharia. Tais algoritmos normalmente consistem de um ciclo iterativo, no qual um conjunto de soluções-candidatas ao problema são repetidamente sujeitas a operadores de variação e seleção, de forma a promover uma exploração do espaço de variáveis do problema em busca de um ponto ótimo (máximo ou mínimo) de uma dada função-objetivo.
+Dentre estes algoritmos, um método que tem sido bastante utilizado nos últimos anos é conhecido como Evolução Diferencial - ED (do inglês, differential evolution - DE) \cite{Storn1997}.
+
+A Evolução Diferencial é um algoritmo evolutivo que se baseia nos mecanismos de seleção natural e na genética de populações, utilizando operadores de mutação, cruzamento e seleção para gerar novos indivíduos em busca do mais adaptado \cite{Rocha2011}. Inicialmente é realizada uma escolha aleatória com distribuição uniforme de uma população composta por Np indivíduos, que são denominados vetores, os quais devem cobrir todo o espaço de busca \cite{Figueiredo2014}.
+
+Após isso, ocorre a mutação, onde estes vetores sofrem modificações, o que faz surgir novos indivíduos, denominados vetores doadores, pela adição da diferença ponderada entre dois indivíduos escolhidos aleatoriamente da população inicial a um terceiro indivíduo que também é escolhido de forma aleatória com distribuição uniforme da população original \cite{Paiva2011}.
+
+Posteriormente ocorre a operação de cruzamento, onde os vetores doadores são combinados com os componentes de um outro vetor escolhido aleatoriamente, chamado de vetor alvo, a fim de gerar o vetor denominado experimental. Este processo é conhecido por cruzamento \cite{Oliveira2006}.
+
+Por fim, a seleção é feita comparando o valor de custo do vetor experimental e do vetor alvo. Sendo assim, se o custo do vetor experimental for menor que o custo do vetor alvo, o vetor alvo da geração seguinte será o vetor experimental, caso contrário, o vetor alvo da geração seguinte será o vetor alvo da geração atual \cite{Lacerda2010}.
+
+O procedimento é finalizado por meio de algum critério de parada, o qual pode ser: um número determinado de iterações consecutivas, um tempo computacional determinado, um número máximo de iterações ou ainda, quando um número máximo de avaliações de indivíduos é atingido \cite{Rosario2011}.
+
+As principais etapas de um algoritmo de evolução diferencial clássico estão mostradas na Figura 1.
+
+![Fluxograma do algortimo de evolução diferencial clássico](fluxograma.jpeg){#id .class width=50% height=50%}
+
+
+## Design do Experimento
+
+A tarefa para este estudo de caso é a comparação experimental de duas configurações de um algoritmo de otimização aplicado em uma classe de problemas, representada por um conjunto de instâncias de teste. As duas configurações são apresentadas a seguir:
+
+```{r, include=TRUE}
+## Configuração 1
+recpars1 <- list(name = "recombination_blxAlphaBeta", alpha = 0, beta = 0)
+mutpars1 <- list(name = "mutation_rand", f = 4)
+
+## Configuração 2
+recpars2 <- list(name = "recombination_linear")
+mutpars2 <- list(name = "mutation_rand", f = 1.5)
+```
+
+Além disto, os seguintes parâmetros experimentais foram dados para este estudo:
+
+• Mínima diferença de importância prática (padronizada): (d* = $\delta$*/$\sigma$) = 0.5
+
+• Significância desejada: $\alpha$ = 0.05
+
+• Potência mínima desejada (para o caso d = d*): $\pi$ = 1 - $\beta$ = 0.8
+
+Para a execução dos experimentos, foram utilizados os pacotes ExpDE e smoof. A classe de funções de interesse para este teste é composta por funções Rosenbrock de dimensão entre 2 e 150.
+
+Para a correta comparação entre duas configurações de algoritmos dentro de uma classe de problemas é necessário que os algortimos sejam executados em uma quantidade de dimensões representativas. Além disso, cada instância deve ser executada um número de vezes suficiente para que se consiga alcançar a potência, significância e importância prática desejada. Realizar um alto número de execuções em cada dimensão e coletar os dados de cada execução pode ser computacionalmente pesado ou infactível em alguns casos, como este, por exemplo. Portanto, será utilizada a abordagem criada por Campelo e Takahashi, que propõe a estimativa do número mínimo de instâncias (neste caso, dimensões) a serem avaliadas e também propõe uma estratégia para se obter o número mínimo de execuções em cada instância, através de uma avaliação iterativa, enquanto as execuções forem sendo coletadas \cite{campelo2019}.
+
+Como primeiro passo, deve-se estimar o número de instâncias de acordo com os parâmetros experimentais fornecidos:
+
+A função calc_instances do pacote CAISEr \cite{CAISEr} permite estimar o número mínimo de instâncias necessárias para se comparar múltiplos algoritmos, de maneira que os requisitos experimentais sejam atingidos. O número de comparações (ncomparisons) é dado pela seguinte equação: 
+
+\begin{equation} ncomparisons = \frac{K\times(K-1)}{2} \end{equation}
+
+Onde $K$ é o número de algoritmos que se deseja comparar.
+
+Como $K$ = 2 para o problema em questão, tem-se que ncomparisons = 1.
+
+```{r}
+# Dados do trabalho
+alpha <- 0.05
+delta <- 0.5
+beta <- 0.2
+
+out <- calc_instances(ncomparisons = 1, 
+                      d = delta, 
+                      power = 1 - beta, 
+                      sig.level = alpha, 
+                      alternative.side = "two.sided", 
+                      power.target = "mean")
+cat('Número de instâncias necessárias:', out$ninstances)
+```
+
+Pode-se concluir pelo resultado da execução da função que são necessárias 34 instâncias para se realizar o experimento descrito. 
+
+## Coleta dos Dados
+
+Para que seja possível utilizar todo o intervalo de valores possíveis de D ($D \in [2, 150]$), espaçou-se uniformemente as 34 instâncias:
+
+```{r}
+num_dims <- 34
+dims = round(linspace(2, 150, num_dims), digits = 0)
+print(dims)
+```
+
+Seguindo o Algoritmo 2 proposto por Campelo e Takahashi, deve-se realizar um conjunto de execuções piloto para que se possa obter os dados de média e variância das instâncias e, dessa forma, iniciar-se a execução iterativa até que se obtenha o erro padrão (a estimativa da diferença em performance entre os dois algoritmos) com a precisão pretendida (Algoritmo 1 proposto por Campelo e Takahashi) \cite{campelo2019}.
+
+Desta forma, foi feita uma execução piloto com a escolha inicial de 10 execuções e com os 34 blocos obtidos anteriormente.
+
+```{r, include=TRUE}
+suppressPackageStartupMessages(library(ExpDE))
+suppressPackageStartupMessages(library(smoof))
+
+file_name = "pilot_execution_backup.csv"
+num_exec <- 10
+
+if (file.exists(file_name)) {
+  
+  # Se ja existir uma arquivo com o dados da execução, não é necessário executar novamente. 
+  # Apenas será feita a leitura do arquivo
+  print("Arquivo de backup encontrado. Recuperando dados ao inves de realizar uma nova execução")
+  initial_data <- read.csv(file=file_name, header = TRUE, sep=",")
+  dims <- initial_data$dim
+  mean_y1 <- initial_data$mean.instance1
+  mean_y2 <- initial_data$mean.instance2
+  sd_y1 <- initial_data$sd.instance1
+  sd_y2 <- initial_data$sd.instance2
+} else {
+  
+  # Função para execução de n funções de rosenbrock para determinada dimensao
+  executeRosenbrock <- function(dim, num_exec) {
+    # Função de Ronsebrock para determinada dimensao
+    fn <<- function(X) {
+          if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
+          Y <- apply(X, MARGIN = 1,
+          FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+          return(Y)
+    }
+    
+    # Definições dadas no enunciado
+    selpars <- list(name = "selection_standard")
+    stopcrit <- list(names = "stop_maxeval", maxevals = 5000*dim, maxiter = 100*dim)
+    probpars <- list(name = "fn", xmin = rep(-5, dim), xmax = rep(10, dim))
+    popsize <- 5*dim
+    
+    y1 <- vector(,num_exec)
+    y2 <- vector(,num_exec)
+    for (i in 1:num_exec){
+      
+      # Rodando problema para instancia 1
+      out <-  ExpDE(mutpars = mutpars1,
+              recpars = recpars1,
+              popsize = popsize,
+              selpars = selpars,
+              stopcrit = stopcrit,
+              probpars = probpars,
+              showpars = list(show.iters = "dots", showevery = 20))
+      y1[i] <- out$Fbest
+      
+      # Rodando problema para instancia 2
+      out <-  ExpDE(mutpars = mutpars2,
+              recpars = recpars2,
+              popsize = popsize,
+              selpars = selpars,
+              stopcrit = stopcrit,
+              probpars = probpars,
+              showpars = list(show.iters = "dots", showevery = 20))
+      y2[i] <- out$Fbest
+      cat("\n y1", y1[i])
+      cat("\n y2", y2[i])
+    }
+    
+    return(
+      data.frame(
+        mean1 = mean(y1),
+        mean2 = mean(y2),
+        sd1 = sd(y1),
+        sd2 = sd(y2)))
+  }
+  
+  # Função para execução de n funções de rosenbrock para uma lista de dimensões
+  executeRosenbrockForDims <- function(dims, num_exec){
+    num_dims <- length(dims)
+    mean_y1 <- vector(,num_dims)
+    mean_y2 <- vector(,num_dims)
+    sd_y1 <- vector(,num_dims)
+    sd_y2 <- vector(,num_dims)
+    
+    for (d in 1:num_dims){
+      dim <- dims[d]
+      
+      # Múltiplas execuções
+      Y = executeRosenbrock(dim, num_exec)
+      
+      cat("dim:",dim, " \n")
+      cat("mu1:",Y$mean1, " \n")
+      cat("sd1:",Y$sd1, " \n")
+      cat("mu2:",Y$mean2, " \n")
+      cat("sd2:",Y$sd2, " \n")
+      
+      mean_y1[d] <- Y$mean1
+      mean_y2[d] <- Y$mean2
+      sd_y1[d] <- Y$sd1
+      sd_y2[d] <- Y$sd2
+    }
+    
+    data <- data.frame(
+      dim = dims,
+      mean.instance1 = mean_y1,
+      mean.instance2 = mean_y2,
+      sd.instance1 = sd_y1, 
+      sd.instance2 = sd_y2)
+    
+    return(data)
+  }
+  
+  # Execução das funções de rosenbrock
+  initial_data = executeRosenbrockForDims(dims, num_exec)
+  
+  # Escreve no arquivo de backup os resultados coletados
+  write.csv(initial_data, file = file_name)
+}
+
+initial_data$n1 <- rep(num_exec, num_dims)
+initial_data$n2 <- rep(num_exec, num_dims)
+```
+
+Após esta execução, pode-se prosseguir com o Algoritmo 1, disponível em \cite{campelo2019}. O algoritmo proposto irá executar as instâncias até que o limite de precisão $se*$ seja atingido ou que o número máximo de execuções $n_{max}$ seja alcançado. O valor de $n_{max}$ foi definido como 50.
+
+```{r}
+file_name = "execution_backup.csv"
+num_exec <- 10
+
+if (file.exists(file_name)) {
+  
+  # Se ja existir uma arquivo com o dados da execução, não é necessário executar novamente. 
+  # Apenas será feita a leitura do arquivo
+  print("Arquivo de backup encontrado. Recuperando dados ao inves de realizar uma nova execução")
+  data <- read.csv(file=file_name, header = TRUE, sep=",")
+} else {
+  data <- initial_data
+  se_opt <- 0.05 # se pretendido
+  n_max <- 50 # máximo número de execuções
+  
+  # Loop de dimensões
+  for (d in 1:num_dims) {
+    dim <- data$dim[d]
+    mu1 <- data$mean.instance1[d]
+    mu2 <- data$mean.instance2[d]
+    sd1 <- data$sd.instance1[d]
+    sd2 <- data$sd.instance2[d]
+    n1 <- 10 # número de execuções que já foram realizadas
+    n2 <- 10
+    
+    # Função de Ronsebrock para determinada dimensão
+    fn <- function(X) {
+          if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
+          Y <- apply(X, MARGIN = 1,
+          FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+          return(Y)
+    }
+    
+    # Definições dadas no enunciado
+    selpars <- list(name = "selection_standard")
+    stopcrit <- list(names = "stop_maxeval", maxevals = 5000*dim, maxiter = 100*dim)
+    probpars <- list(name = "fn", xmin = rep(-5, dim), xmax = rep(10, dim))
+    popsize <- 5*dim
+    
+    # Calculo do se
+    se <- sqrt(sd1^2/n1 + sd2^2/n2)
+    
+    cat("\n se inicial:", se)
+    
+    # Loop de execuções
+    while (se > se_opt && n1 + n2 < n_max){
+      ropt <- sd1/sd2
+      if (n1/n2 < ropt){
+        
+        # Executa algoritmo 1
+        out <- ExpDE(mutpars = mutpars1,
+        recpars = recpars1,
+        popsize = popsize,
+        selpars = selpars,
+        stopcrit = stopcrit,
+        probpars = probpars,
+        showpars = list(show.iters = "dots", showevery = 20))
+        y1 <- out$Fbest
+        
+        # Atualiza parâmetros
+        mu_ <- (mu1*n1 + y1)/(n1+1)
+        sd_ <- sqrt(((n1-1)*sd1^2 + (y1 - mu_)*(y1 - mu1))/n1)
+        mu1 <- mu_
+        sd1 <- sd_
+        n1 <- n1 + 1
+      } else {
+        
+        # Executa algoritmo 2
+        out <- ExpDE(mutpars = mutpars2,
+        recpars = recpars2,
+        popsize = popsize,
+        selpars = selpars,
+        stopcrit = stopcrit,
+        probpars = probpars,
+        showpars = list(show.iters = "dots", showevery = 20))
+        y2 <- out$Fbest
+        
+        # Atualiza parâmetros
+        mu_ <- (mu2*n2 + y2)/(n2+1)
+        sd_ <- sqrt(((n2-1)*sd2^2 + (y2 - mu_)*(y2 - mu2))/n2)
+        mu2 <- mu_
+        sd2 <- sd_
+        n2 <- n2 + 1
+        
+      }
+      
+      # Atualiza se
+      se <- sqrt(sd1^2/n1 + sd2^2/n2)
+      cat("se:", se, " \n")
+      cat("dim:",dim, " \n")
+      cat("se:",se, " \n")
+      cat("mu1:",mu1, " \n")
+      cat("sd1:",sd1, " \n")
+      cat("mu2:",mu2, " \n")
+      cat("sd2:",sd2, " \n")
+      cat("n1:",n1, " \n")
+      cat("n2:",n2, " \n")
+    }
+    
+    data$mean.instance1[d] <- mu1
+    data$sd.instance1[d] <- sd1
+    data$n1[d] <- n1
+    data$mean.instance2[d] <- mu2
+    data$sd.instance2[d] <- sd2
+    data$n2[d] <- n2
+  }
+  
+  # Escreve dados no arquivo de backup
+  write.csv(data, file = file_name)
+}
+```
+
+Abaixo pode ser visto os dados coletados, bem como o número de execuções de cada instância: 
+
+```{r}
+data
+```
+
+Podemos perceber que a maioria dos blocos utilizou o orçamento máximo de execuções $n_{max}$, que era de 50 execuções. No entanto, a distribuição deste número de execuções é balanceada de uma forma que minimize o limite de precisão $se*$.
+
+## Teste de Hipóteses
+
+Optou-se por utilizar o ANOVA para realizar a comparação das amostras. Será realizada uma validação das premissas *a posteriori*.
+
+```{r}
+d <- data.frame(dim = rep(data$dim,2),
+                config = c(rep(1,num_dims), rep(2,num_dims)),
+                Y = c(data$mean.instance1, data$mean.instance2))
+
+for (i in 1:2){
+  d[, i] <- as.factor(d[, i])
+}
+
+model <- aov(Y~dim+config, data = d)
+summary(model)
+```
+
+Para a realização do teste ANOVA, é necessário que as seguintes premissas sejam cumpridas \cite{anova_premissas}: 
+
+•	As amostras devem ser independentes;
+
+•	As amostras devem apresentar distribuição normal;
+
+•	As variâncias podem ser consideradas iguais (homocedasticidade).
+
+**Verificação da independência**: Por serem dois algortimos diferentes, foi considerada independência entre as amostras.
+
+**Verificação de Normalidade**: Para uma avaliação estatística sobre a validação da hipótese de uma distribuição normal para as amostras, pode-se usar o teste Shapiro-Wilk, onde têm-se as seguintes hipóteses \cite{teste_norm_R}:
+
+$$\begin{cases} H_0: \text{A amostra provém de uma população com distribuição normal}\\H_1: \text{A amostra não provém de uma população com distribuição normal} \end{cases}$$
+```{r}
+shapiro.test(model$residuals)
+```
+Como interpretação do teste, temos que se o p-valor < 0.05 ($\alpha$), deve-se rejeitar a hipótese nula, ou seja, os dados não possuem distribuição normal \cite{teste_norm_R}, caso contrário, não há evidências para se rejeitar a hipótese nula. Como pode ser visto pelo teste acima, não se pode assumir normalidade para este modelo e, portanto, o ANOVA não pode ser utilizado para estes dados.
+
+Pode-se tentar realizar uma transformação logarítmica nos dados a fim de se conseguir resíduos normalizados no ANOVA:
+```{r}
+model_log <- aov(log(Y)~dim+config, data = d)
+summary(model_log)
+```
+
+Validação de normalidade dos resíduos do modelo com escala logarítmica:
+```{r}
+shapiro.test(model_log$residuals)
+```
+Como pode-se observar pelo resultado do teste de Shapiro-Wilk, não podemos assumir normalidade para as amostras em escala logarítmica. O que implica que não podemos realizar o ANOVA.
+
+Como alternativa, tem-se o teste de Friedman com as seguintes hipóteses:
+
+$$\begin{cases} H_0: \text{A média das duas populações são estatisticamente iguais}\\H_1: \text{A média das duas populações são estatisticamente diferentes} \end{cases}$$
+
+```{r, include=TRUE}
+y <- c(data$mean.instance1, data$mean.instance2)
+group <- as.factor(c(rep(1, length(data$mean.instance1)), rep(2, length(data$mean.instance2))))
+datatable = cbind (y, group)
+friedman.test(datatable)
+```
+
+Como interpretação do teste, temos que se o p-valor < 0.05 ($\alpha$), deve-se rejeitar a hipótese nula, ou seja, as médias dos grupos de amostras não são homogêneas, caso contrário, não há evidências para se rejeitar a hipótese nula. Portanto, analisando os resultados  do teste, pode-se considerar que a média dos grupos não são homogêneas.
+
+Visto que os dados não possuem a média dos grupos com uma distribuição homogênea, foi plotado um gráfico com o rendimento dos dois algoritmos para a realização de uma análise gráfica.
+
+```{r, include=FALSE}
+# Organização dos dados para o gráfico
+med1t = t(data$mean.instance1)
+med2t = t(data$mean.instance2)
+colnames(med1t) <- as.character(data$dim)
+colnames(med2t) <- as.character(data$dim)
+medAlg1 <- as.vector(colMeans(med1t))
+medAlg2 <- as.vector(colMeans(med2t))
+
+# Dados para grafico do Algoritmo 1
+label <- rep('Algoritmo 1', 34)
+var <- data$dim
+vec <- melt(medAlg1, id.vars = NULL)
+graf1 <- cbind(var, vec, label)
+
+# Dados para o grafico do Algoritmo 2
+label <- rep('Algoritmo 2', 34)
+var <- data$dim
+vec <- melt(medAlg2, id.vars = NULL)
+graf2 <- cbind(var, vec, label)
+```
+
+```{r, include=TRUE}
+merged <- rbind(graf1, graf2)
+p <- ggplot(merged, aes(x = var, y = value, color = label)) + geom_line()
+p + labs(x = "Dimensão", y = "Valor médio") +
+    guides(color=guide_legend(title="Legenda")) +
+    scale_color_manual(values = c("green", "blue"))
+```
+
+Dado o gráfico anterior, é possível observar que a solução ótima do Algoritmo 1 apresenta um valor maior de erro quando aplicada ao conjunto de funções utilizado em relação à solução ótima do Algoritmo 2 para todas as dimensões escolhidas, como pode ser confirmado analisando as colunas *mean.instance1* e *mean.instance2* da tabela *data*. Portanto, conclui-se que o Algoritmo 2 possui melhor solução média em relação ao primeiro algoritmo.
+
+## Discussões e Conclusões
+
+O estudo teve como objetivo definir, entre dois algoritmos de otimização, qual possui o melhor desempenho para uma dada classe de problemas de otimização. Os dois algoritmos a serem comparados utilizavam o método conhecido como evolução diferencial. Para a análise de desempenho utilizou-se a classe de funções Rosenbrock de dimensão entre 2 e 150. Neste caso, o algoritmo que apresenta os menores valores para suas melhores soluções quando aplicadas à função de Rosenbrock é considerado o algoritmo de melhor desempenho.
+
+Inicialmente, definiu-se as duas configurações a serem utilizadas. Então, utilizou-se o método calc_instances e através dele, concluiu-se que seriam necessárias 34 instâncias, ou seja, as duas configurações deveriam ser executadas para 34 valores distintos de dimensões da função de Rosenbrock. Para cada valor de dimensão, os códigos de otimização foram executados 10 vezes inicialmente.
+
+Após isto, utilizou-se a abordagem criada por Campelo e Takahashi, que propõe uma estratégia para se obter o número mínimo de execuções em cada instância de forma iterativa. Então, as configurações foram executadas novamente para as quantidades fornecidas por este método. Para cada dimensão, foram salvas a média dos resíduos de cada uma das duas configurações, os desvios padrões e o número de execução de cada instância.
+
+Após isto, deu-se início ao teste de hipóteses no qual decidiu-se utilizar o ANOVA para realizar a comparação das amostras. Porém, para que se possa aplicar o ANOVA é necessário que se cumpra algumas premissas. Utilizou-se o teste de Shapiro-Wilk para testar se a distribuição dos dados era normal. Observou-se que o teste rejeitou a hipótese de normalidade dos dados. Portanto, optou-se por transformar os dados em escala logarítmica e repetir os testes. Porém, mesmo após a transformação, a hipótese de distribuição normal dos dados foi rejeitada através do teste de Shapiro-Wilk.
+
+Como as premissas para aplicação do ANOVA não foram cumpridas, não foi possível utilizá-lo. Desta forma, optou-se pelo teste de Friedman. Através deste teste, foi possível concluir que a média dos grupos não são homogêneas e que, portanto, há diferença significativa do desempenho de um algoritmo para o outro. A partir disto, foi realizada uma análise gráfica, com o objetivo de observar qual algoritmo apresentou melhor desempenho.
+
+Observando-se graficamente os resultados e as considerações realizadas na sua descrição, concluiu-se que o algoritmo 2 apresentou melhor desempenho na otimização da função de Rosenbrock. 
+
+
+## Atividades dos membros
+
+**Diego**
+
+Elaboração dos testes e construção textual.
+
+**Elias**
+
+Elaboração textual e análise dos resultados.
+
+**Matheus**
+
+Estruturação dos códigos e obtenção dos dados das amostras.
+
+**Todos**
+
+Elaboração das hipóteses, elaboração do experimento, pesquisa bibilográfica, definição das premissas e tomada de decisão.
+
+
+\renewcommand\refname{Referências Bibliográficas}
+\bibliographystyle{unsrt}
+\bibliography{referencias}
