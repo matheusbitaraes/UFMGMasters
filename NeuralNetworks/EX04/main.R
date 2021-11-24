@@ -28,8 +28,8 @@ sol <- trainperceptron(X[,1:2],X[,3], 0.01, 0.01, 10, 1)
 w <- sol[[1]]
 err <- sol[[2]]
 
-seqi<-seq(0,6,0.1)
-seqj<-seq(0,6,0.1)
+seqi<-seq(0,6, 0.1)
+seqj<-seq(0,6, 0.1)
 M<-matrix(0,nrow=length(seqi), ncol=length(seqj))
 ci<-0
 for(i in seqi){
