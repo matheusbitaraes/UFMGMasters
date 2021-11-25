@@ -128,7 +128,9 @@ mat <- data.matrix(wine)
 X <- scale(mat[, 2:14], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
 Y <- mat[, 1]
 
-evaluate_dataset(X, Y, name, 5, 100)
+evaluate_dataset(X, Y, name, 50)
+
+
 
 ######################################### PimaIndiansDiabetes ######################################### 
 # load the dataset
@@ -141,9 +143,9 @@ mat <- data.matrix(PimaIndiansDiabetes)
 X <- scale(mat[, 1:8], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
 Y <- mat[, 9]
 
-evaluate_dataset(X, Y, name, 5, 100)
+evaluate_dataset(X, Y, name, 100)
 
-#########################################  CERVICAL CANCER DATASET #########################################  
+#########################################  SPIRALS DATASET #########################################  
 # definição do spirals
 N<-1000 # numeros pares
 p <- mlbench.spirals(N, 1, 0.15)
@@ -153,7 +155,7 @@ x2 <- X[,2]
 Y <- p[[2]]
 name <- "Spirals Dataset"
 
-evaluate_dataset(X, Y, name, 5, 100)
+evaluate_dataset(X, Y, name, 100)
 
 ######################################### CAESARIAN DATASET #########################################  
 name <- "Caesarian Dataset"
@@ -166,7 +168,7 @@ mat <- data.matrix(cae)
 X <- scale(mat[, 1:5], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
 Y <- mat[, 6]
 
-evaluate_dataset(X, Y, name, 4, 100)
+evaluate_dataset(X, Y, name, 100)
 
 #########################################  CERVICAL CANCER DATASET #########################################  
 name <- "Breast Cancer Dataset"
@@ -184,5 +186,5 @@ mat <- data.matrix(bc)
 X <- scale(mat[, 1:9], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
 Y <- mat[, 10]
 
-evaluate_dataset(X, Y, name, 5, 100)
+evaluate_dataset(X, Y, name, 100)
 
