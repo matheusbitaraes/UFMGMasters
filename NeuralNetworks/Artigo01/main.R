@@ -4,7 +4,7 @@ graphics.off()
 source('perceptron.R')
 source('votedPerceptron.R')
 source('fmpImaPerceptron.R')
-
+library(caret) 
 
 # MAIN
 multiple_evaluations <- function(X, Y, num_eval){
@@ -16,14 +16,17 @@ multiple_evaluations <- function(X, Y, num_eval){
   vp_acc <- matrix(0, nrow=num_eval, ncol=1)
   vp_time <- matrix(0, nrow=num_eval, ncol=1)
   for (i in 1:num_eval){
+    print(sprintf("Time for perceptron - %s", i))
     perc_start_time <- Sys.time()
     s1 <- eval_perceptron(X, Y, should_plot_matrix=FALSE)
     perc_end_time <- Sys.time()
     
+    print(sprintf("Time for fmi perceptron - %s", i))
     fmp_start_time <- Sys.time()
     s2 <- eval_fmp_ima_perceptron(X, Y, should_plot_matrix=FALSE)
     fmp_end_time <- Sys.time()
     
+    print(sprintf("Time for voted perceptron - %s", i))
     vp_start_time <- Sys.time()
     s3 <- eval_voted_perceptron(X, Y, should_plot_matrix=FALSE)
     vp_end_time <- Sys.time()
@@ -36,6 +39,8 @@ multiple_evaluations <- function(X, Y, num_eval){
     
     vp_acc[i] <- s3[1]
     vp_time[i] <- vp_end_time - vp_start_time
+    
+    print(sprintf("perc: %s | fmi perc: %s Z voted perc: %s \n\n", s1[1], s2[1], s3[1]))
   }
   
   return(list(data.frame("perceptron" = perc_acc, "fmp_ima" = fmp_acc, "voted_perceptron" = vp_acc),
