@@ -55,7 +55,7 @@ trainperceptron <- function(xin, yd, eta, tol, maxepocas, par){
   return(retlist)
 }
 
-eval_perceptron <- function(X, Y, should_plot_matrix=FALSE){
+eval_com_perceptron <- function(X, Y, should_plot_matrix=FALSE){
   # separação em treinamento e teste
   nc <- nrow(X)
   suffled_indexes <- sample(nc)
@@ -65,17 +65,36 @@ eval_perceptron <- function(X, Y, should_plot_matrix=FALSE){
   x_test <- X[suffled_indexes[(train_size+1):nc],]
   y_test <- Y[suffled_indexes[(train_size+1):nc]]
   
-  # treinamento do perceptron
+  # treinamento de 5 perceptrons
   sol <- trainperceptron(x_train, y_train, 0.01, 0.01, 50, 1)
-  w <- sol[[1]]
-  err <- sol[[2]]
+  w1 <- sol[[1]]
+  err1 <- sol[[2]]
+  sol <- trainperceptron(x_train, y_train, 0.01, 0.01, 50, 1)
+  w2 <- sol[[1]]
+  err2 <- sol[[2]]
+  sol <- trainperceptron(x_train, y_train, 0.01, 0.01, 50, 1)
+  w2 <- sol[[1]]
+  err2 <- sol[[2]]
+  sol <- trainperceptron(x_train, y_train, 0.01, 0.01, 50, 1)
+  w3 <- sol[[1]]
+  err3 <- sol[[2]]
+  sol <- trainperceptron(x_train, y_train, 0.01, 0.01, 50, 1)
+  w4 <- sol[[1]]
+  err4 <- sol[[2]]
+  sol <- trainperceptron(x_train, y_train, 0.01, 0.01, 50, 1)
+  w5 <- sol[[1]]
+  err5 <- sol[[2]]
   
   # acurácia
   ypred <- matrix(0,nrow=dim(x_test)[1], ncol=1)
   
   for (i in 1:dim(x_test)[1]){
-    s <- yperceptron(x_test[i,], w, -1)
-    ypred[i] <- s
+    s <- c(yperceptron(x_test[i,], w1, -1),
+            yperceptron(x_test[i,], w2, -1),
+            yperceptron(x_test[i,], w3, -1),
+           yperceptron(x_test[i,], w4, -1),
+           yperceptron(x_test[i,], w5, -1))
+    ypred[i] <- round(mean(s))
   }
   # matriz de confusão
   lvs <- c("0", "1")
@@ -87,19 +106,19 @@ eval_perceptron <- function(X, Y, should_plot_matrix=FALSE){
   if (should_plot_matrix){
     print(cm)
   }
-  return (c(cm$overall[1], err[length(err)]))
+  return (c(cm$overall[1], err1[length(err1)]))
 }
 
-# gerar mais amostras da mesma distribuição
-# criação de dataset com duas distribuições normais
-s1 <- 0.4
-s2 <- 0.4
-nc <- 200
-nt <- nc * 2
-
-
-### FUNÇÕES PARA TESTAR O MÉTODO ###
-
+# # gerar mais amostras da mesma distribuição
+# # criação de dataset com duas distribuições normais
+# s1 <- 0.4
+# s2 <- 0.4
+# nc <- 200
+# nt <- nc * 2
+# 
+# 
+# ### FUNÇÕES PARA TESTAR O MÉTODO ###
+# 
 # # criação de dataset com duas distribuições normais
 # xc1 <- matrix(rnorm(nc * 2), ncol = 2)*s1 + t(matrix((c(2,2)),ncol=nc,nrow=2))
 # xc2 <- matrix(rnorm(nc * 2), ncol = 2)*s2 + t(matrix((c(4,4)),ncol=nc,nrow=2))

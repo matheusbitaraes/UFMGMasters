@@ -3,7 +3,7 @@ graphics.off()
 
 source('perceptron.R')
 source('votedPerceptron.R')
-source('fmpImaPerceptron.R')
+source('commiteePerceptron.R')
 library(caret) 
 
 # MAIN
@@ -16,17 +16,16 @@ multiple_evaluations <- function(X, Y, num_eval){
   vp_acc <- matrix(0, nrow=num_eval, ncol=1)
   vp_time <- matrix(0, nrow=num_eval, ncol=1)
   for (i in 1:num_eval){
-    print(sprintf("Time for perceptron - %s", i))
+    print(sprintf("Iteration - %s", i))
     perc_start_time <- Sys.time()
     s1 <- eval_perceptron(X, Y, should_plot_matrix=FALSE)
     perc_end_time <- Sys.time()
     
-    print(sprintf("Time for fmi perceptron - %s", i))
+    
     fmp_start_time <- Sys.time()
-    s2 <- eval_fmp_ima_perceptron(X, Y, should_plot_matrix=FALSE)
+    s2 <- eval_com_perceptron(X, Y, should_plot_matrix=FALSE)
     fmp_end_time <- Sys.time()
     
-    print(sprintf("Time for voted perceptron - %s", i))
     vp_start_time <- Sys.time()
     s3 <- eval_voted_perceptron(X, Y, should_plot_matrix=FALSE)
     vp_end_time <- Sys.time()
@@ -40,11 +39,11 @@ multiple_evaluations <- function(X, Y, num_eval){
     vp_acc[i] <- s3[1]
     vp_time[i] <- vp_end_time - vp_start_time
     
-    print(sprintf("perc: %s | fmi perc: %s Z voted perc: %s \n\n", s1[1], s2[1], s3[1]))
+    print(sprintf("perc: %s | com perc: %s | voted perc: %s \n\n", s1[1], s2[1], s3[1]))
   }
   
-  return(list(data.frame("perceptron" = perc_acc, "fmp_ima" = fmp_acc, "voted_perceptron" = vp_acc),
-              data.frame("perceptron" = perc_time, "fmp_time" = fmp_acc, "voted_perceptron" = vp_time)))
+  return(list(data.frame("perceptron" = perc_acc, "perceptron_commitee" = fmp_acc, "voted_perceptron" = vp_acc),
+              data.frame("perceptron" = perc_time, "perceptron_commitee" = fmp_time, "voted_perceptron" = vp_time)))
 }
 
 evaluate_dataset <- function(X, Y, name, num_exec){
@@ -109,7 +108,7 @@ names(iris)[5] <- 'y'
 # converter em matrix
 mat <- data.matrix(iris)
 X <- scale(mat[, 1:4], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
-Y <- mat[, 5]
+Y <- mat[, 5] - 1 # transformando em 0 e 1
 
 evaluate_dataset(X, Y, name, 50)
 
@@ -126,7 +125,7 @@ names(wine)[1] <- 'y'
 # converter em matrix
 mat <- data.matrix(wine)
 X <- scale(mat[, 2:14], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
-Y <- mat[, 1]
+Y <- mat[, 1] - 1 # transformando em 0 e 1
 
 evaluate_dataset(X, Y, name, 50)
 
@@ -140,10 +139,33 @@ names(PimaIndiansDiabetes)[9] <- "y"
 
 # converter em matrix
 mat <- data.matrix(PimaIndiansDiabetes)
-X <- scale(mat[, 1:8], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
-Y <- mat[, 9]
+Y <- mat[, 1] - 1 # transformando entradas em 0 e 1
+X <- scale(mat[, 2:8], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
 
-evaluate_dataset(X, Y, name, 100)
+evaluate_dataset(X, Y, name, 50)
+
+#########################################  CERVICAL CANCER DATASET #########################################  
+name <- "Cervical Cancer Dataset"
+bc.url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data"
+bc <- read.csv(bc.url, header=FALSE) 
+bc <- bc[,2:11]
+bc <- na.omit(bc)
+bc <- droplevels(bc[!bc$V7 == '?',])
+# pre processamento
+bc$V11 <- as.factor(bc$V11)
+names(bc)[10] <- "y"
+
+# converter em matrix
+mat <- data.matrix(bc)
+Y <- mat[, 10] - 1 # subtraindo para ficar entre 0 e 1
+X <- scale(mat[, 1:9], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
+
+
+evaluate_dataset(X, Y, name, 50)
+
+
+
+
 
 #########################################  SPIRALS DATASET #########################################  
 # definição do spirals
@@ -170,21 +192,5 @@ Y <- mat[, 6]
 
 evaluate_dataset(X, Y, name, 100)
 
-#########################################  CERVICAL CANCER DATASET #########################################  
-name <- "Breast Cancer Dataset"
-bc.url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data"
-bc <- read.csv(bc.url, header=FALSE) 
-bc <- bc[,2:11]
-bc <- na.omit(bc)
-bc <- droplevels(bc[!bc$V7 == '?',])
-# pre processamento
-bc$V11 <- as.factor(bc$V11)
-names(bc)[10] <- "y"
 
-# converter em matrix
-mat <- data.matrix(bc)
-X <- scale(mat[, 1:9], center = TRUE, scale = TRUE) # fase de normalização dos dados para o gg classification
-Y <- mat[, 10]
-
-evaluate_dataset(X, Y, name, 100)
 
