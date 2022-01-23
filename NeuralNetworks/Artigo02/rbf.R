@@ -2,33 +2,34 @@ library(RSNNS)
 library(caret)
 
 # NOT RUN {
-demo(rbf_irisSnnsR)
-# }
-# NOT RUN {
-demo(rbf_sin)
-# }
-# NOT RUN {
-demo(rbf_sinSnnsR)
-# }
-# NOT RUN {
+# demo(rbf_irisSnnsR)
+# # }
+# # NOT RUN {
+# demo(rbf_sin)
+# # }
+# # NOT RUN {
+# demo(rbf_sinSnnsR)
+# # }
+# # NOT RUN {
+# 
+# inputs <- as.matrix(seq(0,10,0.1))
+# outputs <- as.matrix(sin(inputs) + runif(inputs*0.2))
+# outputs <- normalizeData(outputs, "0_1")
+# 
+# model <- rbf(inputs, outputs, size=40, maxit=1000, 
+#              initFuncParams=c(0, 1, 0, 0.01, 0.01), 
+#              learnFuncParams=c(1e-8, 0, 1e-8, 0.1, 0.8), linOut=TRUE)
+# 
+# par(mfrow=c(2,1))
+# plotIterativeError(model)
+# plot(inputs, outputs)
+# lines(inputs, fitted(model), col="green")
+# # }
 
-inputs <- as.matrix(seq(0,10,0.1))
-outputs <- as.matrix(sin(inputs) + runif(inputs*0.2))
-outputs <- normalizeData(outputs, "0_1")
-
-model <- rbf(inputs, outputs, size=40, maxit=1000, 
-             initFuncParams=c(0, 1, 0, 0.01, 0.01), 
-             learnFuncParams=c(1e-8, 0, 1e-8, 0.1, 0.8), linOut=TRUE)
-
-par(mfrow=c(2,1))
-plotIterativeError(model)
-plot(inputs, outputs)
-lines(inputs, fitted(model), col="green")
-# }
 
 
-
-eval_rbf <- function(X, Y, should_plot_matrix=FALSE){
+eval_rbf <- function(X, Y, should_plot_matrix=FALSE, i = 1){
+  set.seed(i)
   nc <- nrow(X)
   suffled_indexes <- sample(nc)
   train_size <- floor(nc * 0.70)
@@ -39,8 +40,10 @@ eval_rbf <- function(X, Y, should_plot_matrix=FALSE){
   
   # treinamento do perceptron
   
-  y_class_onehot = onehot_encode(y_train) # class labels should begin from 0
-  sol <- elm_train(x_train, y_class_onehot, nhid = 20, actfun = 'relu')
+  # y_class_onehot = onehot_encode(y_train) # class labels should begin from 0
+  # sol <- elm_train(x_train, y_class_onehot, nhid = 20, actfun = 'relu')
+  
+  model <- rbf(x_train, y_train, size=40, maxit=1000)
   
   # acurácia 
   y_pred = elm_predict(sol, x_test, normalize = TRUE)

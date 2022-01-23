@@ -1,7 +1,8 @@
 library(elmNNRcpp)
 library(caret)
 
-eval_elm <- function(X, Y, should_plot_matrix=FALSE){
+eval_elm <- function(X, Y, should_plot_matrix=FALSE, i = 1){
+  set.seed(i)
   nc <- nrow(X)
   suffled_indexes <- sample(nc)
   train_size <- floor(nc * 0.70)
