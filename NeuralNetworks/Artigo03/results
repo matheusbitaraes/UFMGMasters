@@ -1,0 +1,121 @@
+   perceptron          svm    gg_classification perceptron_commitee voted_perceptron
+ Min.   :0.9933   Min.   :1   Min.   :1         Min.   :0.9933      Min.   :0.9552  
+ 1st Qu.:1.0000   1st Qu.:1   1st Qu.:1         1st Qu.:1.0000      1st Qu.:1.0000  
+ Median :1.0000   Median :1   Median :1         Median :1.0000      Median :1.0000  
+ Mean   :0.9992   Mean   :1   Mean   :1         Mean   :0.9999      Mean   :0.9976  
+ 3rd Qu.:1.0000   3rd Qu.:1   3rd Qu.:1         3rd Qu.:1.0000      3rd Qu.:1.0000  
+ Max.   :1.0000   Max.   :1   Max.   :1         Max.   :1.0000      Max.   :1.0000  
+[1] "sd perceptron (0.00218840481772879)"
+[1] "sd svm (0)"
+[1] "sd gg_classification (0)"
+[1] "sd perceptron_commitee (0.000942809041582069)"
+[1] "sd voted_perceptron (0.00784850522496246)"
+Friedman and Nemenyi Tests
+The confidence level is 5%
+Number of observations is 50 and number of methods is 5
+Friedman test p-value: 0.0000 - Ha: Different
+Critical distance: 0.8626
+
+ 
+ 
+ IRIS:
+    perceptron          svm         gg_classification perceptron_commitee voted_perceptron
+ Min.   :0.9556   Min.   :0.9778   Min.   :0.9556    Min.   :0.9778      Min.   :0.9000  
+ 1st Qu.:0.9778   1st Qu.:0.9778   1st Qu.:0.9778    1st Qu.:1.0000      1st Qu.:1.0000  
+ Median :1.0000   Median :1.0000   Median :1.0000    Median :1.0000      Median :1.0000  
+ Mean   :0.9898   Mean   :0.9929   Mean   :0.9916    Mean   :0.9973      Mean   :0.9954  
+ 3rd Qu.:1.0000   3rd Qu.:1.0000   3rd Qu.:1.0000    3rd Qu.:1.0000      3rd Qu.:1.0000  
+ Max.   :1.0000   Max.   :1.0000   Max.   :1.0000    Max.   :1.0000      Max.   :1.0000  
+[1] "sd perceptron (0.0128639997392729)"
+[1] "sd svm (0.010471379366648)"
+[1] "sd gg_classification (0.0117845785354099)"
+[1] "sd perceptron_commitee (0.00729468272576259)"
+[1] "sd voted_perceptron (0.0164241759779136)"
+Friedman and Nemenyi Tests
+The confidence level is 5%
+Number of observations is 50 and number of methods is 5
+Friedman test p-value: 0.0000 - Ha: Different
+Critical distance: 0.8626
+ 
+ 
+ 
+ WINE 
+    perceptron          svm         gg_classification perceptron_commitee voted_perceptron
+ Min.   :0.8205   Min.   :0.9487   Min.   :0.9744    Min.   :0.8974      Min.   :0.8235  
+ 1st Qu.:0.9231   1st Qu.:1.0000   1st Qu.:1.0000    1st Qu.:0.9487      1st Qu.:0.8961  
+ Median :0.9487   Median :1.0000   Median :1.0000    Median :0.9744      Median :0.9393  
+ Mean   :0.9451   Mean   :0.9949   Mean   :0.9954    Mean   :0.9703      Mean   :0.9362  
+ 3rd Qu.:0.9744   3rd Qu.:1.0000   3rd Qu.:1.0000    3rd Qu.:1.0000      3rd Qu.:1.0000  
+ Max.   :1.0000   Max.   :1.0000   Max.   :1.0000    Max.   :1.0000      Max.   :1.0000  
+[1] "sd perceptron (0.044565373728076)"
+[1] "sd svm (0.0115834346526314)"
+[1] "sd gg_classification (0.00995097267927189)"
+[1] "sd perceptron_commitee (0.0290095089717558)"
+[1] "sd voted_perceptron (0.0544282012944367)"
+Friedman and Nemenyi Tests
+The confidence level is 5%
+Number of observations is 50 and number of methods is 5
+Friedman test p-value: 0.0000 - Ha: Different
+Critical distance: 0.8626
+ 
+
+ 
+ 
+ PIMA
+   perceptron          svm         gg_classification perceptron_commitee voted_perceptron
+ Min.   :0.7949   Min.   :0.9231   Min.   :0.8974    Min.   :0.8974      Min.   :0.6429  
+ 1st Qu.:0.9487   1st Qu.:0.9487   1st Qu.:0.9487    1st Qu.:0.9487      1st Qu.:0.8840  
+ Median :0.9487   Median :0.9744   Median :0.9744    Median :0.9744      Median :0.9333  
+ Mean   :0.9492   Mean   :0.9713   Mean   :0.9692    Mean   :0.9585      Mean   :0.9140  
+ 3rd Qu.:0.9744   3rd Qu.:1.0000   3rd Qu.:1.0000    3rd Qu.:0.9744      3rd Qu.:0.9444  
+ Max.   :1.0000   Max.   :1.0000   Max.   :1.0000    Max.   :1.0000      Max.   :1.0000  
+[1] "sd perceptron (0.0368090862075697)"
+[1] "sd svm (0.0240979988328184)"
+[1] "sd gg_classification (0.0274114094269153)"
+[1] "sd perceptron_commitee (0.0323051173045411)"
+[1] "sd voted_perceptron (0.0706785553166398)"
+Friedman and Nemenyi Tests
+The confidence level is 5%
+Number of observations is 50 and number of methods is 5
+Friedman test p-value: 0.0000 - Ha: Different
+Critical distance: 0.8626
+ 
+ CERVCAN
+    perceptron          svm         gg_classification perceptron_commitee voted_perceptron
+ Min.   :0.8634   Min.   :0.9268   Min.   :0.9122    Min.   :0.9366      Min.   :0.8971  
+ 1st Qu.:0.9463   1st Qu.:0.9512   1st Qu.:0.9463    1st Qu.:0.9610      1st Qu.:0.9621  
+ Median :0.9561   Median :0.9610   Median :0.9585    Median :0.9659      Median :0.9726  
+ Mean   :0.9521   Mean   :0.9572   Mean   :0.9561    Mean   :0.9654      Mean   :0.9713  
+ 3rd Qu.:0.9707   3rd Qu.:0.9659   3rd Qu.:0.9659    3rd Qu.:0.9707      3rd Qu.:0.9855  
+ Max.   :0.9854   Max.   :0.9805   Max.   :0.9902    Max.   :0.9902      Max.   :1.0000  
+[1] "sd perceptron (0.0258251860084099)"
+[1] "sd svm (0.0125160364056713)"
+[1] "sd gg_classification (0.0153626534390582)"
+[1] "sd perceptron_commitee (0.0103479041149251)"
+[1] "sd voted_perceptron (0.0206826295448761)"
+Friedman and Nemenyi Tests
+The confidence level is 5%
+Number of observations is 50 and number of methods is 5
+Friedman test p-value: 0.0000 - Ha: Different
+Critical distance: 0.8626
+
+
+SPIRALS
+   perceptron          svm         gg_classification perceptron_commitee voted_perceptron
+ Min.   :0.7805   Min.   :0.9171   Min.   :0.9268    Min.   :0.9268      Min.   :0.9000  
+ 1st Qu.:0.9463   1st Qu.:0.9512   1st Qu.:0.9463    1st Qu.:0.9573      1st Qu.:0.9550  
+ Median :0.9561   Median :0.9561   Median :0.9561    Median :0.9634      Median :0.9704  
+ Mean   :0.9520   Mean   :0.9550   Mean   :0.9578    Mean   :0.9639      Mean   :0.9654  
+ 3rd Qu.:0.9659   3rd Qu.:0.9610   3rd Qu.:0.9659    3rd Qu.:0.9707      3rd Qu.:0.9851  
+ Max.   :0.9951   Max.   :0.9756   Max.   :0.9902    Max.   :0.9902      Max.   :1.0000  
+[1] "sd perceptron (0.0307625845341176)"
+[1] "sd svm (0.0126702850807408)"
+[1] "sd gg_classification (0.0128347916727904)"
+[1] "sd perceptron_commitee (0.0125435540069686)"
+[1] "sd voted_perceptron (0.0241409655444855)"
+Friedman and Nemenyi Tests
+The confidence level is 5%
+Number of observations is 50 and number of methods is 5
+Friedman test p-value: 0.0000 - Ha: Different
+Critical distance: 0.8626
+ 
