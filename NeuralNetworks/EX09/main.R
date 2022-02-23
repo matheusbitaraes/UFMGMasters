@@ -1,20 +1,41 @@
 rm(list=ls())
+library("RSNNS")
 
-sech2 <-function(u){
-  return(((2/(exp(u)+exp(-u)))*(2/(exp(u)+exp(-u)))))
-}
+# sech2 <-function(u){
+#   return(((2/(exp(u)+exp(-u)))*(2/(exp(u)+exp(-u)))))
+# }
 
-x<-seq(0, 2*pi,.05)
-noise <- runif(length(x), -.1, .1)
-y<-sin(x) + noise
+N<-45
+x<-runif(N,0,2*pi)
+y<-sin(x) + rnorm(N,0,0.1)
 
 plot(x,y,type="p", xlab="x", ylab="y", col="blue")
 
 xtest <- seq(0, 2*pi,.001)
 ytest <-sin(xtest)
 lines(xtest,ytest,type="l", xlab="x", ylab="y", col="red")
-legend(x="topright",legend=c("Train", "Test"), col=c("blue", "red"), lty = c(1, 1))
 
+
+model <- mlp(x, y, size=3, maxit=2000, initFunc = "Randomize_Weigths",
+             initFuncParams = c(-0.3,0.3), learnFunc = "Rprop",
+             learnFuncParams = c(0.1, 0.1), updateFunc = "Topological_Order",
+             updateFuncParams = c(0), hiddenActFunc = "Act_Logistic",
+             shufflePatterns = TRUE, linOut = TRUE)
+
+yhat<-predict(model, as.matrix(xtest))
+lines(xtest,yhat,type="l", xlab="x", ylab="y", col="green")
+legend(x="topright",legend=c("Train", "Test", "Predicted"), col=c("blue", "red", "green"), lty = c(1, 1))
+title("Resposta do modelo MLP de 3 neuronios")
+
+error <- model$IterativeFitError[model$maxit]
+print(error)
+plot(c(1:model$maxit),model$IterativeFitError,type="l", xlab="iterations", ylab="error", col="blue")
+title("Erros por iteração")
+
+
+es<-c(0.8210759, 2.474404, 1.87387, 0.4599661, 0.4694107)
+print(mean(es))
+print(sd(es))
 # x<-matrix(c(0,0,0,1,1,0,1,1),ncol=2, byrow=T)
 xatual<-matrix(nrow=2, ncol=1)
 # y<-matrix(c(-1,1,1,-1,1,-1,-1,1),ncol=2,byrow=T)
